@@ -1,0 +1,99 @@
+'use strict';
+
+const fs = require('fs');
+
+process.stdin.resume();
+process.stdin.setEncoding('utf-8');
+
+let inputString = '';
+let currentLine = 0;
+
+process.stdin.on('data', function(inputStdin) {
+    inputString += inputStdin;
+});
+
+process.stdin.on('end', function() {
+    inputString = inputString.split('\n');
+
+    main();
+});
+
+function readLine() {
+    return inputString[currentLine++];
+}
+
+
+/*
+ * Complete the 'droppedRequests' function below.
+ *
+ * The function is expected to return an INTEGER.
+ * The function accepts INTEGER_ARRAY requestTime as parameter.
+ */
+
+function droppedRequests(requestTime) {
+    // Write your code here
+
+    let max = 0;
+    let min = 1000000001;
+    let counts = new Map();
+
+    for(let i =0;i<requestTime.length;++i){
+        if(max < requestTime[i]) max = requestTime[i];
+        if(min > requestTime[i]) min = requestTime[i];
+        counts.set(requestTime[i],1+(counts.get(requestTime[i])||0));
+    }
+
+    //Math.max(...requestTime);
+    /*
+    let counts = requestTime.reduce((s,e)=>{
+        s.set(e,1+(s.get(e)||0))
+        return s;
+    },new Map());
+    */
+
+    console.log(counts);
+
+    let dropped = 0;
+    let secCount = 0;
+    let sec10Count = 0;
+    let sec60Count = 0;
+
+    const SEC_LIMIT = 3;
+    const SEC10_LIMIT = 20;
+    const SEC60_LIMIT = 60;
+
+    for(let i=min;i<=max;++i){
+        
+        secCount = counts.get(i) || 0;
+
+        //if(secCount == 0) continue;
+
+        sec10Count = sec10Count + (counts.get(i) || 0) - (counts.get(i-10) || 0);
+        sec60Count = sec60Count + (counts.get(i) || 0) - (counts.get(i-60) || 0);
+
+        let d1 =0, d2=0,d3=0;
+
+        if(secCount > SEC_LIMIT){
+            d1 = (secCount - SEC_LIMIT);
+            //continue;
+        }
+
+        if(sec10Count > SEC10_LIMIT){
+            d2 = (sec10Count - SEC10_LIMIT);
+            //continue;
+            if(d2 > secCount) d2 = secCount;
+        }
+        if(sec60Count > SEC60_LIMIT){
+            d3 = (sec60Count - SEC60_LIMIT);
+            if(d3 > secCount) d3 = secCount;
+            //continue;
+        }
+
+        dropped += Math.max(d1,d2,d3);
+
+        //console.log("i= "+i+" secCount= "+secCount+" sec10Count= "+sec10Count+" sec60Count= "+secCount+" dropped= "+dropped+" d1= "+d1+" d2= "+d2+" d3= "+d3);
+
+    }
+    return dropped;
+}
+function main() {
